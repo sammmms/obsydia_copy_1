@@ -9,6 +9,7 @@ class TokenInterceptor extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     SharedPreferences.getInstance().then((value) {
       String? token = value.getString('token');
+      print(token.toString() + '====');
       if (token != null) {
         options.headers.addAll({"Authorization": "Bearer $token"});
       }

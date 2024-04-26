@@ -34,6 +34,7 @@ class _CommentWidgetState extends State<CommentWidget> {
   late CommentBloc commentBloc;
   late UserBloc userBloc;
   Timer? _mentionTimerToFire;
+  late List<Map<String, dynamic>> privateSubject;
 
   @override
   void initState() {
@@ -44,14 +45,14 @@ class _CommentWidgetState extends State<CommentWidget> {
 
     userBloc = UserBloc(tenantId: widget.tenantId);
     List<Subject> mentionableSubject = context.read<Issue>().mentionableSubject;
-    mentionProvider = MentionProvider(
-        mentionable: mentionableSubject.map((eachSubject) {
+    privateSubject = mentionableSubject.map((eachSubject) {
       return {
         "id": eachSubject.id,
         "name": eachSubject.displayName ?? eachSubject.name,
         "username": eachSubject.name
       };
-    }).toList());
+    }).toList();
+    mentionProvider = MentionProvider(mentionable: privateSubject);
 
     if (context.read<Issue>().type == "public") {
       userBloc.getAllUser(
@@ -127,6 +128,10 @@ class _CommentWidgetState extends State<CommentWidget> {
                                 .read<MentionProvider>()
                                 .updateMentionable([]);
                           }
+                        } else {
+                          context
+                              .read<MentionProvider>()
+                              .updateMentionable(privateSubject);
                         }
                       }
                       return MentionTextField(
@@ -192,17 +197,16 @@ class _CommentWidgetState extends State<CommentWidget> {
 
   handleSearch(value) {
     if (context.read<Issue>().type == "public") {
-      {
-        if (_mentionTimerToFire?.isActive ?? false) {
-          _mentionTimerToFire?.cancel();
-        }
-        _mentionTimerToFire = Timer(
-          const Duration(milliseconds: 600),
-          () => userBloc.getAllUser(
-              auth: context.read<AuthBloc>().controller.value.auth!,
-              name: value),
-        );
+      if (_mentionTimerToFire?.isActive ?? false) {
+        _mentionTimerToFire?.cancel();
       }
+      _mentionTimerToFire = Timer(
+        const Duration(milliseconds: 600),
+        () => userBloc.getAllUser(
+            auth: context.read<AuthBloc>().controller.value.auth!, name: value),
+      );
+      return;
     }
+    userBloc.resetController();
   }
 }
