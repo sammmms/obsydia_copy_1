@@ -1,0 +1,48 @@
+name: obsydia_copy_1
+description: "A copycat of Obsidia fetching."
+
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.3 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  dio: ^5.4.2+1
+  rxdart: ^0.27.7
+  provider: ^6.1.2
+  shared_preferences: ^2.2.3
+  flutter_native_splash: ^2.4.0
+  jwt_decoder: ^2.0.1
+  firebase_messaging: ^14.8.1
+  timelines: ^0.1.0
+  flutter_mentions: ^2.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+
+  fonts:
+    - family: Quicksand
+      fonts:
+        - asset: fonts/Quicksand-Regular.ttf
+        - asset: fonts/Quicksand-Bold.ttf
+          weight: 700
+
+flutter_native_splash:
+  color: "#B9ECB2"
+  image: assets/Obsidian.png
+  android_12:
+    color: "#B9ECB2"
+    image: assets/Obsidian.png
