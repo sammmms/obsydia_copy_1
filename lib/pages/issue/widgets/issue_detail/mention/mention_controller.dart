@@ -1,18 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:obsydia_copy_1/providers/mention_provider.dart';
-import 'package:provider/provider.dart';
 
 class MentionEditingController extends TextEditingController {
   final Function onSearchFunction;
-
-  MentionEditingController({required this.onSearchFunction});
+  MentionEditingController({required this.onSearchFunction}) {
+    addListener(detectMention);
+    addListener(detectDelete);
+  }
 
   // Declaration of consitantly updating value variable
   List<TextRange> mentionIndexRange = [];
+  List<Map<String, dynamic>> mentionedPerson = [];
   int? start;
   int end = 0;
-  ValueNotifier<bool> isSuggestionVisible = ValueNotifier<bool>(false);
   String writtedText = "";
+  final isSuggestionVisible = StreamController<bool>();
 
   @override
   TextSpan buildTextSpan(
@@ -27,8 +30,8 @@ class MentionEditingController extends TextEditingController {
     }
     //Regular Expression Pattern to recognize @id (usually id is 24 length text consist of non-whitespace character)
     RegExp patternToRecognizeMention = RegExp(r'@(\S){24}');
-    List<Map<String, dynamic>> data =
-        context.read<MentionProvider>().mentioned ?? [];
+    List<Map<String, dynamic>> data = mentionedPerson;
+    // context.read<MentionProvider>().mentioned ?? [];
 
     // Loop through every element in the listOfString (splitted string by whitespace)
     for (int index = 0; index < listOfString.length; index++) {
@@ -105,45 +108,40 @@ class MentionEditingController extends TextEditingController {
 
   ///This function is a listener, need to be listened on a Controller
   ///It lisiten for a "@" and update the menu to show itself.
-  void suggestionListener() {
-    // Current cursor position, ex. a| -> we are at first position, to get the a, we need to -1 the index given
-    int currentCursorPosition = value.selection.baseOffset - 1;
-    end = currentCursorPosition + 1;
-    // This means that we are the start position, suggestion need to be closed, and the start need to be null
-    if (currentCursorPosition == -1) {
-      start = null;
-      isSuggestionVisible.value = false;
+  void detectMention() {
+    int currentCursorPosition = value.selection.start;
+    if (currentCursorPosition <= 0) {
+      _setMentionInfo(null);
       return;
     }
-    // Validate that the cursor position is not out of range.
-    if (currentCursorPosition >= 0 && currentCursorPosition < text.length) {
-      if (text[currentCursorPosition] == "@") {
-        start = currentCursorPosition;
-        isSuggestionVisible.value = true;
-        onSearchFunction("a");
-        return;
-      }
-      if (start != null) {
-        handleSearch(start);
-      }
-      // TODO : Solve the problem when placing word into @ from the front, ex. a@, don't change it into id, and keep the word
-      if (isSuggestionVisible.value) {
-        if ((text[currentCursorPosition] == " " &&
-                currentCursorPosition > start!) ||
-            (currentCursorPosition < start!) ||
-            (currentCursorPosition == start &&
-                text[currentCursorPosition].isEmpty)) {
-          start = null;
-          isSuggestionVisible.value = false;
-        }
-        return;
-      }
+
+    final preceedingText = text.substring(0, currentCursorPosition);
+    final nearestPreceedingWhitespace =
+        preceedingText.lastIndexOf(RegExp(r'\s'));
+    final nearestPreceedingMention =
+        preceedingText.lastIndexOf(RegExp(r'(\s\@|^\@)'));
+
+    if (nearestPreceedingMention == -1) {
+      _setMentionInfo(null);
+      return;
     }
+    if (nearestPreceedingWhitespace > nearestPreceedingMention) {
+      _setMentionInfo(null);
+      return;
+    }
+
+    int theStart = nearestPreceedingWhitespace + 1;
+
+    final theText = text
+        .substring(theStart, currentCursorPosition)
+        .replaceFirst(RegExp(r'^\s'), "");
+
+    _setMentionInfo(theStart, theText);
   }
 
   ///This function is to be used on a controller, as a listener.
   ///Detects when user tries to delete a mention
-  void deletingListener(BuildContext context) {
+  void detectDelete() {
     if (text.length < writtedText.length) {
       int currentCursorPosition = value.selection.baseOffset - 1;
       // Looping on every single mention user has created, saved as range (see line 195)
@@ -175,8 +173,7 @@ class MentionEditingController extends TextEditingController {
           int replacedEndIndex = text.indexOf(" ",
               mentionStartIndex); //Find the end index of the current text controller text that need to be replaced
           //
-          List<Map<String, dynamic>> data =
-              context.read<MentionProvider>().mentioned ?? [];
+          List<Map<String, dynamic>> data = mentionedPerson;
           String fullId =
               writtedText.substring(mentionStartIndex + 1, mentionEndIndex);
           String? nameOfIdHolder;
@@ -200,8 +197,6 @@ class MentionEditingController extends TextEditingController {
                   TextPosition(offset: currentCursorPosition + 1));
               start = mentionStartIndex;
               end = currentCursorPosition;
-              isSuggestionVisible.value = true;
-              handleSearch(start);
             }
           } catch (err) {
             text =
@@ -214,34 +209,22 @@ class MentionEditingController extends TextEditingController {
     writtedText = text;
   }
 
-  ///This function is to be called whenever user clicked on a portal containing
-  ///
-  ///maps of User ID + User Name
   void addMention(Map<String, dynamic> data) {
     start ??= 0;
     // Save a range of mention (start -> end)
     mentionIndexRange.add(TextRange(start: start!, end: start! + 23));
     //Replace text from start to current cursor position
-    text = text.replaceRange(start!, end, "@${data['id']} ");
+    text = text.replaceRange(start!, value.selection.start, "@${data['id']} ");
+    mentionedPerson.add(data);
   }
 
-  ///This function is to be called whenever the user types in '@', it handles search.
-  ///
-  ///The needs of startIndex as a parameter is to ensure that the value we are searching are a local variable, and not global variable
-  ///
-  ///Which update more consistent than the global variable because of the lacking setState methods
-  void handleSearch(startIndex) {
-    // Check the current cursor
-    int currentCursorPosition = value.selection.baseOffset;
-    int? endIndex =
-        currentCursorPosition > 0 && currentCursorPosition > startIndex
-            ? currentCursorPosition
-            : null;
-    if (text.isNotEmpty &&
-        startIndex < text.length &&
-        ((endIndex ?? text.length) <= text.length)) {
-      var value = text.substring(startIndex + 1, endIndex);
-      onSearchFunction(value);
+  void _setMentionInfo(int? index, [String? value]) {
+    start = index;
+    isSuggestionVisible.add(start != null);
+    if (index != null) {
+      onSearchFunction(value?.substring(
+        1,
+      ));
     }
   }
 }

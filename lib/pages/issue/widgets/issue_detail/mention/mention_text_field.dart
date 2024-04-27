@@ -24,111 +24,114 @@ class MentionTextField extends StatefulWidget {
 
 class _MentionTextFieldState extends State<MentionTextField> {
   late MentionEditingController controller;
-  late ValueNotifier<bool> isSuggestionVisible;
 
   @override
   void initState() {
     controller = widget.controller;
-    controller.addListener(() {
-      controller.deletingListener(context);
-      controller.suggestionListener();
-    });
-    isSuggestionVisible = controller.isSuggestionVisible;
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return PortalEntry(
-        portalAnchor: Alignment.bottomCenter,
-        childAnchor: Alignment.topCenter,
-        visible: isSuggestionVisible.value,
-        portal: Padding(
-          padding: const EdgeInsets.all(20),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                child: Container(
-                    constraints: const BoxConstraints(maxHeight: 300),
-                    decoration: BoxDecoration(
-                        color: const Color.fromARGB(150, 255, 255, 255),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.grey)),
-                    width: double.infinity,
-                    child: context.watch<MentionProvider>().mentionable == null
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                            color: Colors.grey,
-                          ))
-                        : context.watch<MentionProvider>().mentionable!.isEmpty
-                            ? const Center(
-                                child: Text("User is not found."),
-                              )
-                            : ListView.separated(
-                                shrinkWrap: true,
-                                separatorBuilder: (context, index) =>
-                                    const Divider(
-                                      indent: 20,
-                                      endIndent: 20,
-                                    ),
-                                itemCount: context
-                                        .watch<MentionProvider>()
-                                        .mentionable
-                                        ?.length ??
-                                    0,
-                                itemBuilder: (context, index) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      context
-                                          .read<MentionProvider>()
-                                          .addMentioned(context
-                                              .read<MentionProvider>()
-                                              .mentionable![index]);
-                                      controller.addMention(context
-                                          .read<MentionProvider>()
-                                          .mentionable![index]);
-                                    },
-                                    child: ListTile(
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 20),
-                                      leading: const CircleAvatar(
-                                        radius: 15,
-                                        backgroundColor: Colors.grey,
-                                        child: Icon(
-                                          Icons.person,
-                                          color: Color.fromARGB(
-                                              255, 180, 180, 180),
-                                        ),
-                                      ),
-                                      title: Text(
-                                        context
-                                            .read<MentionProvider>()
-                                            .mentionable![index]['name'],
-                                        style: const TextStyle(
-                                            color: Colors.black),
-                                      ),
-                                      subtitle: Text(
-                                        "@${context.read<MentionProvider>().mentionable![index]['username']}",
-                                        style: const TextStyle(
-                                            color: Colors.black),
-                                      ),
-                                    ),
-                                  );
-                                }))),
-          ),
-        ),
-        child: SizedBox(
-          child: TextField(
-            maxLines: 3,
-            minLines: 1,
-            style: widget.style,
-            controller: controller,
-            decoration: InputDecoration(
-              suffixIcon: widget.suffix,
-            ),
-          ),
-        ));
+    return StreamBuilder<bool>(
+        stream: controller.isSuggestionVisible.stream,
+        initialData: false,
+        builder: (context, snapshot) {
+          return PortalEntry(
+              portalAnchor: Alignment.bottomCenter,
+              childAnchor: Alignment.topCenter,
+              visible: snapshot.data!,
+              portal: Padding(
+                padding: const EdgeInsets.all(20),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                      child: Container(
+                          constraints: const BoxConstraints(maxHeight: 300),
+                          decoration: BoxDecoration(
+                              color: const Color.fromARGB(150, 255, 255, 255),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.grey)),
+                          width: double.infinity,
+                          child: context.watch<MentionProvider>().mentionable ==
+                                  null
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                  color: Colors.grey,
+                                ))
+                              : context
+                                      .watch<MentionProvider>()
+                                      .mentionable!
+                                      .isEmpty
+                                  ? const Center(
+                                      child: Text("User is not found."),
+                                    )
+                                  : ListView.separated(
+                                      shrinkWrap: true,
+                                      separatorBuilder: (context, index) =>
+                                          const Divider(
+                                            indent: 20,
+                                            endIndent: 20,
+                                          ),
+                                      itemCount: context
+                                              .watch<MentionProvider>()
+                                              .mentionable
+                                              ?.length ??
+                                          0,
+                                      itemBuilder: (context, index) {
+                                        return GestureDetector(
+                                          onTap: () {
+                                            context
+                                                .read<MentionProvider>()
+                                                .addMentioned(context
+                                                    .read<MentionProvider>()
+                                                    .mentionable![index]);
+                                            controller.addMention(context
+                                                .read<MentionProvider>()
+                                                .mentionable![index]);
+                                          },
+                                          child: ListTile(
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 20),
+                                            leading: const CircleAvatar(
+                                              radius: 15,
+                                              backgroundColor: Colors.grey,
+                                              child: Icon(
+                                                Icons.person,
+                                                color: Color.fromARGB(
+                                                    255, 180, 180, 180),
+                                              ),
+                                            ),
+                                            title: Text(
+                                              context
+                                                  .read<MentionProvider>()
+                                                  .mentionable![index]['name'],
+                                              style: const TextStyle(
+                                                  color: Colors.black),
+                                            ),
+                                            subtitle: Text(
+                                              "@${context.read<MentionProvider>().mentionable![index]['username']}",
+                                              style: const TextStyle(
+                                                  color: Colors.black),
+                                            ),
+                                          ),
+                                        );
+                                      }))),
+                ),
+              ),
+              child: SizedBox(
+                child: TextField(
+                  maxLines: 3,
+                  minLines: 1,
+                  style: widget.style,
+                  controller: controller,
+                  decoration: InputDecoration(
+                    suffixIcon: widget.suffix,
+                  ),
+                ),
+              ));
+        });
   }
 }
