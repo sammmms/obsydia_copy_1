@@ -200,6 +200,7 @@ class _CommentWidgetState extends State<CommentWidget> {
       if (_mentionTimerToFire?.isActive ?? false) {
         _mentionTimerToFire?.cancel();
       }
+      userBloc.resetController();
       _mentionTimerToFire = Timer(
         const Duration(milliseconds: 600),
         () => userBloc.getAllUser(
