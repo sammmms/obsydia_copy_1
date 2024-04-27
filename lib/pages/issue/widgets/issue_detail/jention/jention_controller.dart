@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class JentionEditingController extends TextEditingController {
-  Function(String mention)? onMentionStateChanged;
+  Function(String? mention)? onMentionStateChanged;
   final List<Map<String, dynamic>> mentionList;
 
   JentionEditingController(
@@ -22,11 +22,7 @@ class JentionEditingController extends TextEditingController {
       {required BuildContext context,
       TextStyle? style,
       required bool withComposing}) {
-    String displayText = text.replaceAll(RegExp(r'[0-9]+'), "*");
-    int difference = text.length - displayText.length;
-    String unicode = '\u200b' * difference;
-    displayText = displayText + unicode;
-    return TextSpan(text: displayText, style: TextStyle(color: Colors.black));
+    return TextSpan(text: text, style: TextStyle(color: Colors.black));
   }
 
   int? start;
@@ -49,7 +45,6 @@ class JentionEditingController extends TextEditingController {
       _setMentionInfo(null);
       return;
     }
-
     if (nearestPreceedingWhitespace > nearestPreceedingMention) {
       _setMentionInfo(null);
       return;
@@ -68,13 +63,16 @@ class JentionEditingController extends TextEditingController {
   void _setMentionInfo(int? index, [String? text]) {
     start = index;
     if (onMentionStateChanged != null) {
-      onMentionStateChanged!(text ?? '');
+      onMentionStateChanged!(text);
     }
   }
 
-  void applyMention(String text) {
+  void applyMention(Map<String, dynamic> map) {
     if (start == null) {
       throw Exception('tidak sedang melakukan mentioning, gak bisa apply');
     }
+    text = text.replaceRange(start! - 1, value.selection.start,
+        '[@${map['name']}](user/${map['id']}) ');
+    print(text);
   }
 }

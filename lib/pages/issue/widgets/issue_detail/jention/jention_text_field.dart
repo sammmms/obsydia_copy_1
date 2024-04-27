@@ -18,6 +18,8 @@ class _JentionTextFieldState extends State<JentionTextField> {
     {"id": "662c65b56d619f0c399fc427", "name": "Sam"},
     {"id": "662c65baab124b0108622278", "name": "Jerry"},
   ];
+  late List<Map<String, dynamic>> mentionable;
+  String searching = "";
 
   @override
   void initState() {
@@ -26,10 +28,16 @@ class _JentionTextFieldState extends State<JentionTextField> {
         mentionList: mentionList,
         onMentionStateChanged: (value) {
           setState(() {
-            print('=========' + value);
-            shouldShowPortal = value.isNotEmpty;
+            shouldShowPortal = value != null;
+            searching = value?.toLowerCase() ?? '';
+            mentionable = mentionList
+                .where((element) =>
+                    element['name'].toLowerCase().contains(searching))
+                .toList();
+            print(mentionable);
           });
         });
+    mentionable = mentionList;
   }
 
   @override
@@ -43,11 +51,16 @@ class _JentionTextFieldState extends State<JentionTextField> {
         margin: const EdgeInsets.all(20),
         color: Colors.white,
         child: ListView.separated(
-            itemCount: mentionList.length,
+            itemCount: mentionable.length,
             itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(mentionList[index]['id']),
-                subtitle: Text(mentionList[index]['name']),
+              return GestureDetector(
+                onTap: () {
+                  controller.applyMention(mentionable[index]);
+                },
+                child: ListTile(
+                  title: Text(mentionable[index]['id']),
+                  subtitle: Text(mentionable[index]['name']),
+                ),
               );
             },
             separatorBuilder: (context, index) {
@@ -55,6 +68,7 @@ class _JentionTextFieldState extends State<JentionTextField> {
             }),
       ),
       child: TextField(
+        maxLines: 3,
         controller: controller,
       ),
     );
