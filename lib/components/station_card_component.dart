@@ -16,7 +16,7 @@ class StationCardComponent extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Container(
-          constraints: BoxConstraints(minHeight: 150),
+          constraints: const BoxConstraints(minHeight: 150),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

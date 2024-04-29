@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 class JentionEditingController extends TextEditingController {
@@ -22,7 +20,7 @@ class JentionEditingController extends TextEditingController {
       {required BuildContext context,
       TextStyle? style,
       required bool withComposing}) {
-    return TextSpan(text: text, style: TextStyle(color: Colors.black));
+    return TextSpan(text: text, style: const TextStyle(color: Colors.black));
   }
 
   int? start;
@@ -73,6 +71,5 @@ class JentionEditingController extends TextEditingController {
     }
     text = text.replaceRange(start! - 1, value.selection.start,
         '[@${map['name']}](user/${map['id']}) ');
-    print(text);
   }
 }

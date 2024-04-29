@@ -55,7 +55,7 @@ class _IssuePageState extends State<IssuePage> {
                     ),
                     child: Text("${widget.station!.displayName.toString()}'s"),
                   ),
-                  Text(" Issue List")
+                  const Text(" Issue List")
                 ],
               ),
               centerTitle: true,
@@ -68,7 +68,6 @@ class _IssuePageState extends State<IssuePage> {
             }
             if (snapshot.data?.error ?? false) {
               IssueState error = snapshot.data!;
-              print(error.errorStatus.toString());
               if (error.errorStatus == 400) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   showSnackBarComponent(

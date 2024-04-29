@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:obsydia_copy_1/bloc/auth/auth_bloc.dart';
 import 'package:obsydia_copy_1/bloc/tenant/tenant_bloc.dart';
 import 'package:obsydia_copy_1/models/tenant_model.dart';
 import 'package:obsydia_copy_1/pages/home_page.dart';
-import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/jention/jention_text_field.dart';
 import 'package:obsydia_copy_1/pages/login_page.dart';
 import 'package:obsydia_copy_1/theme.dart';
 import 'package:provider/provider.dart';

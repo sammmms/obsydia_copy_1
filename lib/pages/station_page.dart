@@ -57,7 +57,7 @@ class _StationPageState extends State<StationPage> {
                       context, "Token expired, please login.");
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (context) => LoginPage()),
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
                     (route) => false,
                   );
                 });
@@ -127,10 +127,10 @@ class _StationPageState extends State<StationPage> {
                     context.watch<StationProvider>().currentStation == null
                         ? null
                         : FloatingActionButton(
-                            shape: CircleBorder(),
+                            shape: const CircleBorder(),
                             backgroundColor: Colors.blueAccent.shade100,
                             foregroundColor: Colors.white,
-                            child: Icon(Icons.arrow_forward),
+                            child: const Icon(Icons.arrow_forward),
                             onPressed: () {
                               Station currentStation = context
                                   .read<StationProvider>()

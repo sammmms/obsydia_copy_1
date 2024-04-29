@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/mention/text_field_choice.dart';
 
 class MentionEditingController extends TextEditingController {
   final Function onSearchFunction;
@@ -29,29 +30,44 @@ class MentionEditingController extends TextEditingController {
       listOfString = [];
     }
     //Regular Expression Pattern to recognize @id (usually id is 24 length text consist of non-whitespace character)
-    RegExp patternToRecognizeMention = RegExp(r'@(\S){24}');
+    RegExp patternToRecognizeMention = RegExp(r'@(\S{24})');
     List<Map<String, dynamic>> data = mentionedPerson;
     // context.read<MentionProvider>().mentioned ?? [];
 
     // Loop through every element in the listOfString (splitted string by whitespace)
     for (int index = 0; index < listOfString.length; index++) {
-      //When the pattern matches the regex (every whitespace for 24 word)
+      //When the pattern matches the regex (asdsad@asdasd)
       if (patternToRecognizeMention.hasMatch(listOfString[index])) {
         try {
           // Find the ID in the MAP, if it's not found, then return it as its self. (Usually doesn't happen very often)
+          // Find the mention in a string of (sam@sam) -> (@sam)
+          RegExpMatch? match =
+              patternToRecognizeMention.firstMatch(listOfString[index]);
+          String? mentionUser = match?[0];
+          if (mentionUser == null) {
+            throw "unfoundable";
+          }
+          // Find the index of the @
+          int notMentionBoundary = listOfString[index].indexOf(mentionUser);
+          // Get the string before the @, store it into a basic string
+          String notMention =
+              listOfString[index].substring(0, notMentionBoundary);
+          listOfTextSpan.add(
+            TextSpanChoice(content: notMention).normalTextSpan(),
+          );
+
           var foundedElement = data.firstWhere((dataElement) {
-            return dataElement['id'] == listOfString[index].substring(1);
+            return dataElement['id'] == mentionUser.substring(1);
           });
           // Declare unicode to the string to match the length of the current controller.text (ID (26 length)) and the current display rendered (@{name})
           String unicode = '\u200b' *
               (foundedElement['id'].length - foundedElement['name'].length);
+
           //Append the @name together with the unicode
-          listOfTextSpan.add(TextSpan(
-              text: "@${foundedElement['name']}$unicode",
-              style: const TextStyle(
-                  fontFamily: 'Poppins',
-                  color: Colors.blueAccent,
-                  fontWeight: FontWeight.bold)));
+          listOfTextSpan.add(
+            TextSpanChoice(content: "@${foundedElement['name']}$unicode")
+                .mentionTextSpan(),
+          );
           //If our mention is placed right in the end, there's no need to append an extra spaces, so we keep the loop continued
           //The code below works, so that we could render @sam @albert separated using spaces
           if (index == listOfString.length - 1) {
@@ -60,47 +76,35 @@ class MentionEditingController extends TextEditingController {
           listOfTextSpan.add(const TextSpan(text: ' '));
           needSpace = false;
         } catch (err) {
-          listOfTextSpan.add(TextSpan(
-              text: listOfString[index],
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                color: Colors.black,
-              )));
+          listOfTextSpan.add(
+            TextSpanChoice(content: listOfString[index]).normalTextSpan(),
+          );
         }
       } else {
         //This append spaces accordingly when user needs it ex. (samuel_), we append space, since the splitted string, results in empty list
         //After mention there are usually @name_ (spaces annotate as underline), which we don't want to append the space
         //Because we have already appended a spaces in line 47
         if (listOfString[index].isEmpty && needSpace) {
-          listOfTextSpan.add(const TextSpan(
-              text: " ",
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                color: Colors.black,
-              )));
+          listOfTextSpan.add(
+            TextSpanChoice(content: " ").normalTextSpan(),
+          );
           continue;
         } else {
           needSpace = true;
         }
         //Appending the string when it is not a mention
-        listOfTextSpan.add(TextSpan(
-            text: listOfString[index],
-            style: const TextStyle(
-              fontFamily: 'Poppins',
-              color: Colors.black,
-            )));
+        listOfTextSpan.add(
+          TextSpanChoice(content: listOfString[index]).normalTextSpan(),
+        );
         //When we reach the end of the text, we don't need to append a whitespaces, and only append whitespaces by making use of the line 63 method,
         //which run when we are at the end of the spaces, and it indicates that the user DOES need it since the wrote " " by themselves
         if (index == listOfString.length - 1) {
           continue;
         }
         //This run to append string after each non-mentioned word ex. sam albert jeffrey
-        listOfTextSpan.add(const TextSpan(
-            text: " ",
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              color: Colors.black,
-            )));
+        listOfTextSpan.add(
+          TextSpanChoice(content: " ").normalTextSpan(),
+        );
       }
     }
     return TextSpan(children: listOfTextSpan);
@@ -139,71 +143,67 @@ class MentionEditingController extends TextEditingController {
     _setMentionInfo(theStart, theText);
   }
 
-  ///This function is to be used on a controller, as a listener.
-  ///Detects when user tries to delete a mention
   void detectDelete() {
     if (text.length < writtedText.length) {
-      int currentCursorPosition = value.selection.baseOffset - 1;
-      // Looping on every single mention user has created, saved as range (see line 195)
-      for (var rangeIndex in mentionIndexRange) {
-        // If the end met with the current cursor position, this mean that the user delete it on the last word (should delete every word in the mention)
-        if (rangeIndex.end == currentCursorPosition) {
-          mentionIndexRange.remove(rangeIndex);
-          text = text.replaceRange(rangeIndex.start, rangeIndex.end + 1, "");
-          break;
-        }
-        // If the end meet in the middle of the cursor position
-        if (currentCursorPosition < rangeIndex.end &&
-            currentCursorPosition >= rangeIndex.start) {
-          mentionIndexRange.remove(rangeIndex);
-          // INDEX
-          String startToCurrentPositionString = writtedText.substring(0,
-              currentCursorPosition); //This is just to get the substring of the first space (first divider of mention and word)
-          //
-          int mentionStartIndex =
-              startToCurrentPositionString.lastIndexOf("@") != -1
-                  ? startToCurrentPositionString.lastIndexOf("@")
-                  : 0; //Find the start index of the mention
-          //
-          int mentionEndIndex = writtedText.indexOf(" ", mentionStartIndex) >
-                  0 //Find the end index on the word before the text controller update
-              ? writtedText.indexOf(" ", mentionStartIndex)
-              : writtedText.length;
-          //
-          int replacedEndIndex = text.indexOf(" ",
-              mentionStartIndex); //Find the end index of the current text controller text that need to be replaced
-          //
-          List<Map<String, dynamic>> data = mentionedPerson;
-          String fullId =
-              writtedText.substring(mentionStartIndex + 1, mentionEndIndex);
-          String? nameOfIdHolder;
-          //
-          try {
-            nameOfIdHolder =
-                data.firstWhere((user) => user['id'] == fullId)['name'];
-            int inSpanCursorPosition = currentCursorPosition -
-                mentionStartIndex; //To find the index of the text that need to be discarded, ex. "Hello Billy" , delete i, we need to know the i index after the space, which are index = 1
+      //Detects deletion, comparing text before update and after update.
+      int currentCursorPosition = value.selection.start;
+      if (currentCursorPosition <= 0) {
+        writtedText = text;
+        return;
+      }
+      if (RegExp(r'\s').hasMatch(writtedText[currentCursorPosition])) {
+        writtedText = text;
+        return;
+      }
+      final preceedingText = text.substring(0, currentCursorPosition);
+      final nearestPreceedingWhitespace =
+          preceedingText.lastIndexOf(RegExp(r'\s'));
+      final nearestPreceedingMention =
+          preceedingText.lastIndexOf(RegExp(r'(\s\@|^\@)'));
 
-            //If the cursor position somehow ended up further than the id holder name, then replace it to an empty string
-            if (inSpanCursorPosition > nameOfIdHolder!.length) {
-              text = text.replaceRange(
-                  mentionStartIndex + 1, replacedEndIndex, "");
-            } else {
-              String newNameOfIdHolder = nameOfIdHolder.replaceRange(
-                  inSpanCursorPosition, inSpanCursorPosition + 1, "");
-              text = text.replaceRange(mentionStartIndex + 1,
-                  replacedEndIndex + 1, newNameOfIdHolder);
-              selection = TextSelection.fromPosition(
-                  TextPosition(offset: currentCursorPosition + 1));
-              start = mentionStartIndex;
-              end = currentCursorPosition;
-            }
-          } catch (err) {
-            text =
-                text.replaceRange(mentionStartIndex + 1, replacedEndIndex, "");
-          }
-          break;
+      if (nearestPreceedingMention == -1) {
+        writtedText = text;
+        return;
+      }
+      if (nearestPreceedingWhitespace > nearestPreceedingMention) {
+        writtedText = text;
+        return;
+      }
+
+      final theStart = nearestPreceedingWhitespace + 1;
+
+      int nearestFollowingWhitespace =
+          text.indexOf(RegExp(r'\s'), theStart + 1);
+      if (nearestFollowingWhitespace == -1) {
+        nearestFollowingWhitespace = text.length;
+      }
+      int nearestFollowingWhitespaceBeforeChange =
+          writtedText.indexOf(RegExp(r'\s'), theStart + 1);
+      if (nearestFollowingWhitespaceBeforeChange == -1) {
+        nearestFollowingWhitespaceBeforeChange = text.length + 1;
+      }
+      if (currentCursorPosition == nearestFollowingWhitespace) {
+        if (text.substring(theStart, nearestFollowingWhitespace).length > 20) {
+          text = text.replaceRange(theStart, nearestFollowingWhitespace, "");
         }
+        writtedText = text;
+        return;
+      }
+      final textBeforeChange = writtedText.substring(
+          theStart, nearestFollowingWhitespaceBeforeChange);
+      try {
+        String nameFromId = mentionedPerson.firstWhere((element) =>
+            element['id'] ==
+            textBeforeChange.replaceFirst(RegExp(r'\s\@|^\@'), ""))['name'];
+        int indexInPosition = currentCursorPosition - theStart - 1;
+        nameFromId =
+            nameFromId.replaceRange(indexInPosition, indexInPosition + 1, "");
+        text = text.replaceRange(
+            theStart, nearestFollowingWhitespace, "@$nameFromId");
+        selection = TextSelection.fromPosition(
+            TextPosition(offset: theStart + indexInPosition + 1));
+      } catch (err) {
+        debugPrint(err.toString());
       }
     }
     writtedText = text;
