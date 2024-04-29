@@ -203,7 +203,7 @@ class MentionEditingController extends TextEditingController {
         selection = TextSelection.fromPosition(
             TextPosition(offset: theStart + indexInPosition + 1));
       } catch (err) {
-        debugPrint(err.toString());
+        // debugPrint(err.toString());
       }
     }
     writtedText = text;

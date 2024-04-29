@@ -173,8 +173,7 @@ class _CommentWidgetState extends State<CommentWidget> {
                                     context
                                         .read<MentionProvider>()
                                         .refreshMentioned();
-                                    print(currentText);
-                                    // await commentBloc.sendComment(currentText);
+                                    await commentBloc.sendComment(currentText);
                                   },
                             child: const Icon(
                               IconData(0xf733,
