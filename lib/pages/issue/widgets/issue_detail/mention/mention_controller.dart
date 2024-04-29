@@ -6,15 +6,15 @@ import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/mention/text_fie
 class MentionEditingController extends TextEditingController {
   final Function onSearchFunction;
   MentionEditingController({required this.onSearchFunction}) {
-    addListener(detectMention);
     addListener(detectDelete);
+    addListener(detectMention);
   }
 
   // Declaration of consitantly updating value variable
   List<TextRange> mentionIndexRange = [];
   List<Map<String, dynamic>> mentionedPerson = [];
   int? start;
-  int end = 0;
+  int currentEndPosition = 0;
   String writtedText = "";
   final isSuggestionVisible = StreamController<bool>();
 
@@ -118,6 +118,7 @@ class MentionEditingController extends TextEditingController {
       _setMentionInfo(null);
       return;
     }
+    currentEndPosition = value.selection.end;
 
     final preceedingText = text.substring(0, currentCursorPosition);
     final nearestPreceedingWhitespace =
@@ -182,6 +183,7 @@ class MentionEditingController extends TextEditingController {
       if (nearestFollowingWhitespaceBeforeChange == -1) {
         nearestFollowingWhitespaceBeforeChange = text.length + 1;
       }
+      // TODO : Now just need to recognize (MENTION and NOT MENTION and delete only MENTION)
       if (currentCursorPosition == nearestFollowingWhitespace) {
         if (text.substring(theStart, nearestFollowingWhitespace).length > 20) {
           text = text.replaceRange(theStart, nearestFollowingWhitespace, "");
@@ -196,8 +198,9 @@ class MentionEditingController extends TextEditingController {
             element['id'] ==
             textBeforeChange.replaceFirst(RegExp(r'\s\@|^\@'), ""))['name'];
         int indexInPosition = currentCursorPosition - theStart - 1;
+        int endIndexInPosition = currentEndPosition - theStart - 1;
         nameFromId =
-            nameFromId.replaceRange(indexInPosition, indexInPosition + 1, "");
+            nameFromId.replaceRange(indexInPosition, endIndexInPosition, "");
         text = text.replaceRange(
             theStart, nearestFollowingWhitespace, "@$nameFromId");
         selection = TextSelection.fromPosition(

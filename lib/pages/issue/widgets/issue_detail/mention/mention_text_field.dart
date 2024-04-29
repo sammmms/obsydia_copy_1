@@ -114,7 +114,7 @@ class _MentionTextFieldState extends State<MentionTextField> {
                                       ),
                                     );
                                   }))
-                          : SizedBox()),
+                          : const SizedBox()),
                 ),
               ),
               child: SizedBox(
