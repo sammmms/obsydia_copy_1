@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 
+class MentionedItem {
+  String text;
+  String id;
+  int startIndex;
+  int endIndex;
+
+  MentionedItem(this.text, this.id, this.startIndex, this.endIndex);
+}
+
 class JentionEditingController extends TextEditingController {
   Function(String? mention)? onMentionStateChanged;
-  final List<Map<String, dynamic>> mentionList;
+  List<MentionedItem> mentions = [];
 
   JentionEditingController(
-      {this.onMentionStateChanged, required this.mentionList}) {
+      {this.onMentionStateChanged}) {
     addListener(handleMentionDetect);
   }
 
@@ -21,6 +30,34 @@ class JentionEditingController extends TextEditingController {
       TextStyle? style,
       required bool withComposing}) {
     return TextSpan(text: text, style: const TextStyle(color: Colors.black));
+  }
+
+  @override
+  set value(TextEditingValue newValue) {
+    // note:
+    // method ini akan diinvoke saat:
+    // - ada perubahan text
+    // - ada perubahan seleksi
+    //
+    // pada kasus kita merubah seleksi (termasuk pindah kursor), secara internal method ini dipanggil sekali.
+    //
+    // namun saat kita mengedit text, method ini secara internal akan dipanggil dua kali, karena sebenarnya 
+    // terdapat dua kejadian: edit dan rubah seleksi
+    //
+    // pada kasus ini, kita hanya dengan saat terjadinya "perubahan", maka itu, logic kita dibungkus dengan if (old != new)
+    //
+    // sebenarnya terdapat juga kasus dimana kita melakukan seleksi sebagian text dan melakukan paste dengan nilai yang sama, 
+    // secara internal juga terjadi dua trigger, tetapi pada kasus kita, karena hasilnya menunjukkan nilai yang sama, maka kita
+    // tidak bereaksi terhadap hasil yang sama.
+
+    if (value.text != newValue.text) {
+      print("=========================================");
+      print("=== textLength: ${value.text.length} => ${newValue.text.length}");
+      print("=== selectStart: ${value.selection.start} => ${newValue.selection.start}");
+      print("=== selectEnd: ${value.selection.end} => ${newValue.selection.end}");
+    }
+
+    super.value = newValue;
   }
 
   int? start;
@@ -77,5 +114,6 @@ class JentionEditingController extends TextEditingController {
     var selectionIndex = from + name.length + 1;
     value = TextEditingValue(text: newText, selection: TextSelection.fromPosition(TextPosition(offset: selectionIndex)));
 
+    mentions.add(MentionedItem(name, id, from, from + name.length));
   }
 }

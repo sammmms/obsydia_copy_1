@@ -25,7 +25,6 @@ class _JentionTextFieldState extends State<JentionTextField> {
   void initState() {
     super.initState();
     controller = JentionEditingController(
-        mentionList: mentionList,
         onMentionStateChanged: (value) {
           setState(() {
             shouldShowPortal = value != null;
