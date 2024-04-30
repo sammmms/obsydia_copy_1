@@ -174,7 +174,22 @@ class JentionEditingController extends TextEditingController {
         selection: TextSelection.fromPosition(
             TextPosition(offset: selectionIndex + 1)));
 
-    mentions.add(MentionedItem(name, id, from, from + name.length));
+    var mentionedItem = MentionedItem(name, id, from, from + name.length);
+
+    // tujuan kemudahan dan performance saat buildTextSpan()
+    // kita perlu memastikan item-item mentions diurutan berdasarkan startIndex
+    // dan juga untuk alasan performance, bagian add mention juga usahakan tidak melakukan
+    // list.sort(), melainkan kita menambahkan secara manual, dari belakang, karena
+    // pengetikan pesan cenderung terjadi di bagian belakang text.
+    var insertionIndex = mentions.length;
+    for (var i = mentions.length - 1; i >= 0; i--) {
+      var itr = mentions[i];
+      if (mentionedItem.startIndex <= itr.startIndex) {
+        insertionIndex = i;
+        break;
+      }
+    }
+    mentions.insert(insertionIndex, mentionedItem);
 
     printDatabase();
   }
