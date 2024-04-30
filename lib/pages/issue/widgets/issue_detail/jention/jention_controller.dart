@@ -35,31 +35,25 @@ class JentionEditingController extends TextEditingController {
       TextStyle? style,
       required bool withComposing}) {
     List<InlineSpan> listOfTextSpan = [];
-    // String normalText = "";
-    // String mentionText = "";
-    MentionedItem? currentMention;
-    for (int i = 0; i < text.length; i++) {
-      // If not on mentioning, then always search for the ranges
-      if (currentMention == null) {
-        for (MentionedItem mention in mentions) {
-          if (mention.startIndex >= i && i <= mention.endIndex) {
-            listOfTextSpan.add(mentionSpan(text[i]));
-            currentMention = mention;
-            break;
-          }
-        }
-        if (currentMention == null) {
-          listOfTextSpan.add(normalSpan(text[i]));
-        }
-      } else {
-        if (i <= currentMention.endIndex) {
-          listOfTextSpan.add(mentionSpan(text[i]));
-        } else {
-          listOfTextSpan.add(normalSpan(text[i]));
-          currentMention = null;
-        }
+    
+    // TODO: refactor and comment
+    int cursor = 0;
+    for (var i = 0; i < mentions.length; i++) {
+      var mention = mentions[i];
+      if (mention.startIndex != cursor) {
+        // create a normal text span before this this mention
+        var normalText = text.substring(cursor, mention.startIndex);
+        listOfTextSpan.add(normalSpan(normalText));
       }
+      var mentionText = text.substring(mention.startIndex, mention.endIndex + 1);
+      listOfTextSpan.add(mentionSpan(mentionText));
+      cursor = mention.endIndex + 1;
     }
+    if (cursor != text.length-1) {
+      var normalText = text.substring(cursor, text.length);
+      listOfTextSpan.add(normalSpan(normalText));
+    }
+
     return TextSpan(
         children: listOfTextSpan, style: const TextStyle(color: Colors.black));
   }
@@ -69,7 +63,7 @@ class JentionEditingController extends TextEditingController {
   }
 
   TextSpan mentionSpan(String string) {
-    return TextSpan(text: string, style: const TextStyle(color: Colors.blue));
+      return TextSpan(text: string, style: const TextStyle(color: Colors.blue));
   }
 
   @override
