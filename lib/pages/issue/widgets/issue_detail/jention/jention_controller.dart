@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mentions/flutter_mentions.dart';
 
 class MentionedItem {
   String text;
@@ -7,6 +8,11 @@ class MentionedItem {
   int endIndex;
 
   MentionedItem(this.text, this.id, this.startIndex, this.endIndex);
+
+  @override
+  String toString() {
+    return '<$text> [$id]: start at $startIndex, end at: $endIndex';
+  }
 }
 
 class JentionEditingController extends TextEditingController {
@@ -51,10 +57,33 @@ class JentionEditingController extends TextEditingController {
     // tidak bereaksi terhadap hasil yang sama.
 
     if (value.text != newValue.text) {
+      
       print("=========================================");
       print("=== textLength: ${value.text.length} => ${newValue.text.length}");
       print("=== selectStart: ${value.selection.start} => ${newValue.selection.start}");
       print("=== selectEnd: ${value.selection.end} => ${newValue.selection.end}");
+
+      // preserve "preceeding mentions" + remove "intruded mentions" + adjust "traling mentions"
+      var s = value.selection.start;
+      var e = value.selection.end;
+      var lAdjust = newValue.text.length - value.text.length; // length
+
+      for (var i = mentions.length - 1; i >= 0; i--) {
+        var mention = mentions[i];
+        var shouldRemove = e >= mention.startIndex && s <= mention.endIndex;
+        if (shouldRemove) {
+          mentions.removeAt(i);
+          printDatabase();
+          continue;
+        } 
+
+        var shouldAdjust = mention.startIndex > s;
+        if (shouldAdjust) {
+          mention.startIndex = mention.startIndex + lAdjust;
+          mention.endIndex = mention.endIndex + lAdjust;
+          printDatabase();
+        }
+      }
     }
 
     super.value = newValue;
@@ -115,5 +144,15 @@ class JentionEditingController extends TextEditingController {
     value = TextEditingValue(text: newText, selection: TextSelection.fromPosition(TextPosition(offset: selectionIndex)));
 
     mentions.add(MentionedItem(name, id, from, from + name.length));
+
+    printDatabase();
+  }
+
+  // TODO: buang saat production nanti
+  void printDatabase () {
+    print('==== Database');
+    for (var mention in mentions) {
+      print(mention.toString());
+    }
   }
 }
