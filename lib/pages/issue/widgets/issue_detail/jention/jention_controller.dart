@@ -27,7 +27,7 @@ class JentionEditingController extends TextEditingController {
   int? end;
 
   void handleMentionDetect() {
-    int currentCursorPosition = value.selection.start;
+    int currentCursorPosition = value.selection.end;
     if (currentCursorPosition <= 0) {
       _setMentionInfo(null);
       return;
