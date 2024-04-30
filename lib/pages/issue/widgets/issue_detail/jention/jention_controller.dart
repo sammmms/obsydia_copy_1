@@ -48,7 +48,7 @@ class JentionEditingController extends TextEditingController {
       return;
     }
 
-    int theStart = nearestPreceedingWhitespace + 2;
+    int theStart = nearestPreceedingWhitespace + 1;
 
     final theText = text
         .substring(theStart, currentCursorPosition)
