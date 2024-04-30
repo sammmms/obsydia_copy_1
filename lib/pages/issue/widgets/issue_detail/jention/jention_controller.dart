@@ -51,7 +51,7 @@ class JentionEditingController extends TextEditingController {
     int theStart = nearestPreceedingWhitespace + 1;
 
     final theText = text
-        .substring(theStart, currentCursorPosition)
+        .substring(theStart + 1, currentCursorPosition)
         .replaceFirst(RegExp(r'^\s'), "");
 
     _setMentionInfo(theStart, theText);
