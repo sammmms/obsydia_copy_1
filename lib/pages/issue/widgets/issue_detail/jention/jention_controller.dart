@@ -65,11 +65,17 @@ class JentionEditingController extends TextEditingController {
     }
   }
 
-  void applyMention(Map<String, dynamic> map) {
+  void applyMention(String name, String id) {
     if (start == null) {
       throw Exception('tidak sedang melakukan mentioning, gak bisa apply');
     }
-    text = text.replaceRange(start! - 1, value.selection.start,
-        '[@${map['name']}](user/${map['id']}) ');
+
+    int from = start!;
+    int to = value.selection.end;
+
+    var newText = text.replaceRange(from, to, "@$name");
+    var selectionIndex = from + name.length + 1;
+    value = TextEditingValue(text: newText, selection: TextSelection.fromPosition(TextPosition(offset: selectionIndex)));
+
   }
 }

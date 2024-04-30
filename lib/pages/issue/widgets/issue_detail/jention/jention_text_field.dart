@@ -55,7 +55,8 @@ class _JentionTextFieldState extends State<JentionTextField> {
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () {
-                  controller.applyMention(mentionable[index]);
+                  var item = mentionable[index];
+                  controller.applyMention(item["name"], item["id"]);
                 },
                 child: ListTile(
                   title: Text(mentionable[index]['id']),
