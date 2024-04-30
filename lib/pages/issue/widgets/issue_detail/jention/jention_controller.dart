@@ -19,8 +19,7 @@ class JentionEditingController extends TextEditingController {
   Function(String? mention)? onMentionStateChanged;
   List<MentionedItem> mentions = [];
 
-  JentionEditingController(
-      {this.onMentionStateChanged}) {
+  JentionEditingController({this.onMentionStateChanged}) {
     addListener(handleMentionDetect);
   }
 
@@ -35,7 +34,42 @@ class JentionEditingController extends TextEditingController {
       {required BuildContext context,
       TextStyle? style,
       required bool withComposing}) {
-    return TextSpan(text: text, style: const TextStyle(color: Colors.black));
+    List<InlineSpan> listOfTextSpan = [];
+    // String normalText = "";
+    // String mentionText = "";
+    MentionedItem? currentMention;
+    for (int i = 0; i < text.length; i++) {
+      // If not on mentioning, then always search for the ranges
+      if (currentMention == null) {
+        for (MentionedItem mention in mentions) {
+          if (mention.startIndex >= i && i <= mention.endIndex) {
+            listOfTextSpan.add(mentionSpan(text[i]));
+            currentMention = mention;
+            break;
+          }
+        }
+        if (currentMention == null) {
+          listOfTextSpan.add(normalSpan(text[i]));
+        }
+      } else {
+        if (i <= currentMention.endIndex) {
+          listOfTextSpan.add(mentionSpan(text[i]));
+        } else {
+          listOfTextSpan.add(normalSpan(text[i]));
+          currentMention = null;
+        }
+      }
+    }
+    return TextSpan(
+        children: listOfTextSpan, style: const TextStyle(color: Colors.black));
+  }
+
+  TextSpan normalSpan(String string) {
+    return TextSpan(text: string, style: const TextStyle(color: Colors.black));
+  }
+
+  TextSpan mentionSpan(String string) {
+    return TextSpan(text: string, style: const TextStyle(color: Colors.blue));
   }
 
   @override
@@ -47,22 +81,16 @@ class JentionEditingController extends TextEditingController {
     //
     // pada kasus kita merubah seleksi (termasuk pindah kursor), secara internal method ini dipanggil sekali.
     //
-    // namun saat kita mengedit text, method ini secara internal akan dipanggil dua kali, karena sebenarnya 
+    // namun saat kita mengedit text, method ini secara internal akan dipanggil dua kali, karena sebenarnya
     // terdapat dua kejadian: edit dan rubah seleksi
     //
     // pada kasus ini, kita hanya dengan saat terjadinya "perubahan", maka itu, logic kita dibungkus dengan if (old != new)
     //
-    // sebenarnya terdapat juga kasus dimana kita melakukan seleksi sebagian text dan melakukan paste dengan nilai yang sama, 
+    // sebenarnya terdapat juga kasus dimana kita melakukan seleksi sebagian text dan melakukan paste dengan nilai yang sama,
     // secara internal juga terjadi dua trigger, tetapi pada kasus kita, karena hasilnya menunjukkan nilai yang sama, maka kita
     // tidak bereaksi terhadap hasil yang sama.
 
     if (value.text != newValue.text) {
-      
-      print("=========================================");
-      print("=== textLength: ${value.text.length} => ${newValue.text.length}");
-      print("=== selectStart: ${value.selection.start} => ${newValue.selection.start}");
-      print("=== selectEnd: ${value.selection.end} => ${newValue.selection.end}");
-
       // preserve "preceeding mentions" + remove "intruded mentions" + adjust "traling mentions"
       var s = value.selection.start;
       var e = value.selection.end;
@@ -75,7 +103,7 @@ class JentionEditingController extends TextEditingController {
           mentions.removeAt(i);
           printDatabase();
           continue;
-        } 
+        }
 
         var shouldAdjust = mention.startIndex > s;
         if (shouldAdjust) {
@@ -139,9 +167,12 @@ class JentionEditingController extends TextEditingController {
     int from = start!;
     int to = value.selection.end;
 
-    var newText = text.replaceRange(from, to, "@$name");
+    var newText = text.replaceRange(from, to, "@$name ");
     var selectionIndex = from + name.length + 1;
-    value = TextEditingValue(text: newText, selection: TextSelection.fromPosition(TextPosition(offset: selectionIndex)));
+    value = TextEditingValue(
+        text: newText,
+        selection: TextSelection.fromPosition(
+            TextPosition(offset: selectionIndex + 1)));
 
     mentions.add(MentionedItem(name, id, from, from + name.length));
 
@@ -149,7 +180,7 @@ class JentionEditingController extends TextEditingController {
   }
 
   // TODO: buang saat production nanti
-  void printDatabase () {
+  void printDatabase() {
     print('==== Database');
     for (var mention in mentions) {
       print(mention.toString());

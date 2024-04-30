@@ -24,18 +24,16 @@ class _JentionTextFieldState extends State<JentionTextField> {
   @override
   void initState() {
     super.initState();
-    controller = JentionEditingController(
-        onMentionStateChanged: (value) {
-          setState(() {
-            shouldShowPortal = value != null;
-            searching = value?.toLowerCase() ?? '';
-            mentionable = mentionList
-                .where((element) =>
-                    element['name'].toLowerCase().contains(searching))
-                .toList();
-            print(mentionable);
-          });
-        });
+    controller = JentionEditingController(onMentionStateChanged: (value) {
+      setState(() {
+        shouldShowPortal = value != null;
+        searching = value?.toLowerCase() ?? '';
+        mentionable = mentionList
+            .where(
+                (element) => element['name'].toLowerCase().contains(searching))
+            .toList();
+      });
+    });
     mentionable = mentionList;
   }
 
