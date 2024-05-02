@@ -91,39 +91,31 @@ class JentionEditingController extends TextEditingController {
     if (value.text != newValue.text) {
       // preserve "preceeding mentions" + remove "intruded mentions" + adjust "traling mentions"
       // Readjust variable name for easier readability
-      var cursorStart = value.selection.start;
-      var cursorEnd = value.selection.end;
+      var prevCursorStart = value.selection.start;
+      var prevCursorEnd = value.selection.end;
+      var currentCursorStart = newValue.selection.start;
       var lengthAdjust = newValue.text.length - value.text.length; // length
 
       for (var i = mentions.length - 1; i >= 0; i--) {
         var mention = mentions[i];
-        var shouldRemove = cursorEnd > mention.startIndex &&
-            cursorStart <= mention.endIndex + 1;
-        // Only remove if the end cursor is greater than the startIndex, example.
-        // cursorEnd = 6
-        // text = abcde @Sam \\ @Sam.startIndex = 6
-        // currently we're at |@
-        // when we made any changes at cursorEnd = 6 (previous cursor), we won't really affect the mention
-        // since pasting require the user to be at position 7, the same with deleting
-        // adding things in cursorEnd = 6, only affect the mention position to be adjusted
-        // ===================
-        // Another one is with the cursorStart <= mention.endIndex, this here causes a problem where
-        // If the cursor is on the endIndex, it doesn't remove the mention, example.
-        // cursorStart = 4
-        // text = @Sam
-        // currently we're at @Sam|
-        // removing any text after this should affect it, but since the logic before was cursorStart <= mention.endIndex
-        // We're only removing the mention IF the cursorStart <= mention.endIndex, which are 4 <= 3
-        // must remember, the cursorStart is the previous cursor position
-        // We need to adjust this, so that if our previous cursor position was 4 and we delete anything it
-        // would affect the condition so, we adjust the condition to cursorStart <= mention.endIndex + 1
+        var deleting = currentCursorStart < prevCursorEnd;
+        // Deleting is where the current cursor position is smaller than the previous cursor position
+        var pasting = (currentCursorStart == prevCursorEnd) &&
+            (prevCursorStart <= mention.endIndex);
+        // Pasting is where the current cursor met with the end of previous selection
+        // and the start of the selection is on the mention
+
+        var shouldRemove = prevCursorEnd > mention.startIndex &&
+            (prevCursorStart <= mention.endIndex + 1 && (deleting || pasting));
+        // Only remove if previous end selection are indeed inside mention
+        // and previous start selection are also inside the mention, and is deleting / pasting
         if (shouldRemove) {
           mentions.removeAt(i);
           printDatabase();
           continue;
         }
 
-        var shouldAdjust = mention.startIndex >= cursorStart;
+        var shouldAdjust = mention.startIndex >= prevCursorStart;
         if (shouldAdjust) {
           mention.startIndex = mention.startIndex + lengthAdjust;
           mention.endIndex = mention.endIndex + lengthAdjust;
@@ -162,8 +154,7 @@ class JentionEditingController extends TextEditingController {
 
     // Check if cursor position is inside a mention -Sam
     for (var mention in mentions) {
-      if (currentCursorPosition >= mention.startIndex &&
-          currentCursorPosition <= mention.endIndex + 1) {
+      if (nearestPreceedingWhitespace + 1 == mention.startIndex) {
         _setMentionInfo(null);
         return;
       }
