@@ -1,9 +1,12 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:obsydia_copy_1/api/firebase_api.dart';
 import 'package:obsydia_copy_1/bloc/auth/auth_bloc.dart';
 import 'package:obsydia_copy_1/bloc/tenant/tenant_bloc.dart';
+import 'package:obsydia_copy_1/firebase_options.dart';
 import 'package:obsydia_copy_1/models/tenant_model.dart';
 import 'package:obsydia_copy_1/pages/home_page.dart';
 import 'package:obsydia_copy_1/pages/login_page.dart';
@@ -13,8 +16,8 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-
-  // await FirebaseMessaging.instance.setAutoInitEnabled(true);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await FirebaseApi().initNotification();
   runApp(const MyApp());
 }
 

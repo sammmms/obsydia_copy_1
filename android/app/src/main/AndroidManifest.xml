@@ -31,13 +31,13 @@
             android:value="2" />
 
 
-        <service
-            android:name=".java.MyFirebaseMessagingService"
+        <!-- <service
+            android:name=".service.MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
-        </service> 
+        </service>  -->
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility?hl=en and

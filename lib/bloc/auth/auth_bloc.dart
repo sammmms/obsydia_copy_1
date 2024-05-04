@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:obsydia_copy_1/api/firebase_api.dart';
 import 'package:obsydia_copy_1/bloc/auth/auth_state.dart';
 import 'package:obsydia_copy_1/bloc/tenant/tenant_bloc.dart';
 import 'package:obsydia_copy_1/models/auth_model.dart';
@@ -23,12 +24,17 @@ class AuthBloc {
       // String? fcm = await FirebaseMessaging.instance.getToken();
       // print(fcm);
       controller.add(AuthState(loading: true));
+      await FirebaseApi().initNotification();
+      String? fcmToken = prefs.getString("fcmToken");
+      if (fcmToken == null) {
+        fcmToken = "placeholder";
+      }
       var response = await dio.post(
           'https://hammerhead-app-qslei.ondigitalocean.app/auth/login',
           data: {
             "name": name,
             "password": password,
-            "fcm_token": "placeholder",
+            "fcm_token": fcmToken,
             "type": "mobile",
           });
       Auth responseUser = Auth.fromJson(name: name, json: response.data);
