@@ -3,7 +3,7 @@ import 'package:obsydia_copy_1/bloc/auth/auth_bloc.dart';
 import 'package:obsydia_copy_1/models/issue_model.dart';
 import 'package:obsydia_copy_1/models/tenant_model.dart';
 import 'package:obsydia_copy_1/models/auth_model.dart';
-import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/comment_widget.dart';
+import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/comment/comment_widget.dart';
 import 'package:provider/provider.dart';
 
 class IssueDetailComment extends StatefulWidget {

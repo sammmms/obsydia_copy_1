@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:obsydia_copy_1/bloc/activity/activity_bloc.dart';
 import 'package:obsydia_copy_1/bloc/activity/activity_state.dart';
@@ -13,8 +12,9 @@ import 'package:obsydia_copy_1/models/activity_model.dart';
 import 'package:obsydia_copy_1/models/issue_model.dart';
 import 'package:obsydia_copy_1/models/subject_model.dart';
 import 'package:obsydia_copy_1/models/user_model.dart';
-import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/mention/mention_controller.dart';
-import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/mention/mention_text_field.dart';
+import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/comment/jention_controller.dart';
+import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/comment/mention_text_field.dart';
+import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/comment/widget/send_button.dart';
 import 'package:obsydia_copy_1/providers/mention_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -29,7 +29,7 @@ class CommentWidget extends StatefulWidget {
 }
 
 class _CommentWidgetState extends State<CommentWidget> {
-  late MentionEditingController controller;
+  late JentionEditingController controller;
   late MentionProvider mentionProvider;
   late CommentBloc commentBloc;
   late UserBloc userBloc;
@@ -38,7 +38,7 @@ class _CommentWidgetState extends State<CommentWidget> {
 
   @override
   void initState() {
-    controller = MentionEditingController(onSearchFunction: handleSearch);
+    controller = JentionEditingController(onMentionStateChanged: handleSearch);
     commentBloc =
         CommentBloc(issueId: widget.issueId, tenantId: widget.tenantId);
     commentBloc.resetState();
@@ -104,86 +104,22 @@ class _CommentWidgetState extends State<CommentWidget> {
                 ),
                 StreamBuilder<UserState>(
                     stream: userBloc.controller.stream,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData &&
-                          (snapshot.data?.loading ?? false)) {
+                    builder: (context, userSnapshot) {
+                      if (userSnapshot.hasData &&
+                          (userSnapshot.data?.loading ?? false)) {
                         context.read<MentionProvider>().onLoadingMentionable();
                       }
-                      if (snapshot.hasData && !(snapshot.data!.loading)) {
-                        if (context.read<Issue>().type == "public") {
-                          if (snapshot.data!.userList?.isNotEmpty ?? false) {
-                            List<User> userList = snapshot.data!.userList!;
-                            context
-                                .read<MentionProvider>()
-                                .updateMentionable(userList
-                                    .map((eachUser) => {
-                                          "id": eachUser.id,
-                                          "name": eachUser.displayName ??
-                                              eachUser.name,
-                                          "username": eachUser.name
-                                        })
-                                    .toList());
-                          } else {
-                            context
-                                .read<MentionProvider>()
-                                .updateMentionable([]);
-                          }
-                        } else {
-                          context
-                              .read<MentionProvider>()
-                              .updateMentionable(privateSubject);
-                        }
+                      if (userSnapshot.hasData &&
+                          !(userSnapshot.data!.loading)) {
+                        handleReturnedData(userSnapshot, context);
                       }
                       return MentionTextField(
                         controller: controller,
                         onSearchFunction: handleSearch,
-                        suffix: Builder(builder: (context) {
-                          return OutlinedButton(
-                            style: const ButtonStyle(
-                                shape: MaterialStatePropertyAll(
-                                  CircleBorder(
-                                    side: BorderSide(color: Colors.white),
-                                  ),
-                                ),
-                                side: MaterialStatePropertyAll(
-                                    BorderSide(color: Colors.transparent)),
-                                backgroundColor: MaterialStatePropertyAll(
-                                    Colors.transparent)),
-                            onPressed: state.loading
-                                ? null
-                                : () async {
-                                    String currentText = controller.text;
-                                    if (currentText == "") {
-                                      showSnackBarComponent(context,
-                                          "Text field shouldn't be empty");
-                                      return;
-                                    }
-                                    List<Map<String, dynamic>>? mentioned =
-                                        context
-                                            .read<MentionProvider>()
-                                            .mentioned;
-                                    if (mentioned != null) {
-                                      for (var element in mentioned) {
-                                        currentText = currentText.replaceAll(
-                                            RegExp(r'@' + element['id']),
-                                            '[@${element['name']}](user/${element['id']})');
-                                      }
-                                    }
-                                    controller.text = "";
-                                    context
-                                        .read<MentionProvider>()
-                                        .refreshMentioned();
-                                    await commentBloc.sendComment(currentText);
-                                  },
-                            child: const Icon(
-                              IconData(0xf733,
-                                  fontFamily: CupertinoIcons.iconFont,
-                                  fontPackage: CupertinoIcons.iconFontPackage),
-                              color: Color.fromARGB(242, 21, 86, 139),
-                              size: 20,
-                            ),
-                          );
-                        }),
+                        suffix: SendButton(
+                          handleSentComment: () => handleSentComment(context),
+                          state: state,
+                        ),
                       );
                     }),
                 const SizedBox(
@@ -195,7 +131,8 @@ class _CommentWidgetState extends State<CommentWidget> {
         });
   }
 
-  handleSearch(value) {
+  void handleSearch(value) {
+    // Only run fetch when issue is indeed public
     if (context.read<Issue>().type == "public") {
       if (_mentionTimerToFire?.isActive ?? false) {
         _mentionTimerToFire?.cancel();
@@ -209,5 +146,43 @@ class _CommentWidgetState extends State<CommentWidget> {
       return;
     }
     userBloc.resetController();
+  }
+
+  // To simplify the widget tree, this function is created to handle data returned after the function above
+  // ran, and search fetch for new user data
+  void handleReturnedData(
+    AsyncSnapshot<UserState> userSnapshot,
+    BuildContext context,
+  ) {
+    // If issue is public, then fetched data could be use as display
+    if (context.read<Issue>().type == "public") {
+      if (userSnapshot.data!.userList?.isNotEmpty ?? false) {
+        List<User> userList = userSnapshot.data!.userList!;
+        context.read<MentionProvider>().updateMentionable(userList
+            .map((eachUser) => {
+                  "id": eachUser.id,
+                  "name": eachUser.displayName ?? eachUser.name,
+                  "username": eachUser.name
+                })
+            .toList());
+      } else {
+        context.read<MentionProvider>().updateMentionable([]);
+      }
+    } else {
+      context.read<MentionProvider>().updateMentionable(privateSubject);
+    }
+  }
+
+  // Handle when send comment button is pressed
+  void handleSentComment(BuildContext context) async {
+    String currentText = controller.text;
+    if (currentText == "") {
+      showSnackBarComponent(context, "Text field shouldn't be empty");
+      return;
+    }
+    // Send comment by using the markup text given from the controller
+    await commentBloc.sendComment(controller.getMarkupText());
+    // Reset the field to nothing
+    controller.resetField();
   }
 }

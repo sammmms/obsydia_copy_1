@@ -2,28 +2,30 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
-import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/mention/mention_controller.dart';
+import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/comment/jention_controller.dart';
 import 'package:obsydia_copy_1/providers/mention_provider.dart';
 import 'package:provider/provider.dart';
 
 class MentionTextField extends StatefulWidget {
   final Function onSearchFunction;
-  final MentionEditingController controller;
+  final JentionEditingController controller;
   final TextStyle? style;
   final Widget? suffix;
+  final Widget? prefix;
   const MentionTextField(
       {super.key,
       required this.onSearchFunction,
       required this.controller,
       this.style,
-      this.suffix});
+      this.suffix,
+      this.prefix});
 
   @override
   State<MentionTextField> createState() => _MentionTextFieldState();
 }
 
 class _MentionTextFieldState extends State<MentionTextField> {
-  late MentionEditingController controller;
+  late JentionEditingController controller;
 
   @override
   void initState() {
@@ -82,9 +84,14 @@ class _MentionTextFieldState extends State<MentionTextField> {
                                             .addMentioned(context
                                                 .read<MentionProvider>()
                                                 .mentionable![index]);
-                                        controller.addMention(context
-                                            .read<MentionProvider>()
-                                            .mentionable![index]);
+                                        controller.applyMention(
+                                          context
+                                              .read<MentionProvider>()
+                                              .mentionable![index]['name'],
+                                          context
+                                              .read<MentionProvider>()
+                                              .mentionable![index]['id'],
+                                        );
                                       },
                                       child: ListTile(
                                         contentPadding:
@@ -125,6 +132,7 @@ class _MentionTextFieldState extends State<MentionTextField> {
                   controller: controller,
                   decoration: InputDecoration(
                     suffixIcon: widget.suffix,
+                    prefixIcon: widget.prefix,
                   ),
                 ),
               ));

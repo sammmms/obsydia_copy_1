@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/mention/text_field_choice.dart';
+import 'package:obsydia_copy_1/pages/issue/unused_widget/text_field_choice.dart';
 
 class MentionEditingController extends TextEditingController {
   final Function onSearchFunction;

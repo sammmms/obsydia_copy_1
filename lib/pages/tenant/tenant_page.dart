@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:obsydia_copy_1/bloc/tenant/tenant_bloc.dart';
 import 'package:obsydia_copy_1/bloc/tenant/tenant_state.dart';
-import 'package:obsydia_copy_1/pages/issue/widgets/issue_detail/jention/jention_text_field.dart';
+import 'package:obsydia_copy_1/pages/issue/unused_widget/unused_jention_field.dart';
 import 'package:obsydia_copy_1/pages/tenant/widgets/tenant_card.dart';
 import 'package:obsydia_copy_1/models/tenant_model.dart';
 import 'package:provider/provider.dart';
@@ -44,8 +44,6 @@ class TenantPage extends StatelessWidget {
                         );
                       });
                 }),
-            SizedBox(height: 200),
-            JentionTextField(),
           ],
         ),
       ),
