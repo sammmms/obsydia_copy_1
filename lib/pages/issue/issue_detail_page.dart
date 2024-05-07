@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:obsydia_copy_1/bloc/activity/activity_bloc.dart';
+import 'package:obsydia_copy_1/bloc/issue/issue_bloc.dart';
 import 'package:obsydia_copy_1/models/issue_model.dart';
 import 'package:obsydia_copy_1/models/subject_model.dart';
 import 'package:obsydia_copy_1/models/tenant_model.dart';
@@ -11,11 +13,9 @@ import 'package:provider/provider.dart';
 class IssueDetailPage extends StatefulWidget {
   final Issue issue;
   final Tenant tenant;
-  const IssueDetailPage({
-    super.key,
-    required this.issue,
-    required this.tenant,
-  });
+  final String? activityId;
+  const IssueDetailPage(
+      {super.key, required this.issue, required this.tenant, this.activityId});
 
   @override
   State<IssueDetailPage> createState() => _IssueDetailPageState();

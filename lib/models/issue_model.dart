@@ -20,7 +20,7 @@ class Issue {
   final String status;
   final String type;
   final ActivityPriority priority;
-  final int totalComments;
+  final int? totalComments;
 
   Issue({
     required this.id,

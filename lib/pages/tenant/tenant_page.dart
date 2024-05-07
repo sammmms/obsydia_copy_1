@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:obsydia_copy_1/bloc/tenant/tenant_bloc.dart';
 import 'package:obsydia_copy_1/bloc/tenant/tenant_state.dart';
-import 'package:obsydia_copy_1/pages/issue/unused_widget/unused_jention_field.dart';
 import 'package:obsydia_copy_1/pages/tenant/widgets/tenant_card.dart';
 import 'package:obsydia_copy_1/models/tenant_model.dart';
 import 'package:provider/provider.dart';
@@ -44,6 +44,29 @@ class TenantPage extends StatelessWidget {
                         );
                       });
                 }),
+            OutlinedButton(
+                onPressed: () {
+                  const androidChannel = AndroidNotificationChannel(
+                    'high_importance_channel',
+                    'High Importance Notifications',
+                    description: "Important notifications channel",
+                    importance: Importance.defaultImportance,
+                  );
+                  //
+                  FlutterLocalNotificationsPlugin().show(
+                    12313,
+                    "123123",
+                    "123123",
+                    NotificationDetails(
+                      android: AndroidNotificationDetails(
+                          androidChannel.id, androidChannel.name,
+                          channelDescription: androidChannel.description,
+                          importance: androidChannel.importance,
+                          icon: '@drawable/ic_launcher'),
+                    ),
+                  );
+                },
+                child: const Text("Show not"))
           ],
         ),
       ),

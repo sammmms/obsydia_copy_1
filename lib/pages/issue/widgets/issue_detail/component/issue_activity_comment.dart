@@ -8,7 +8,9 @@ import 'package:provider/provider.dart';
 
 class IssueActivityComment extends StatefulWidget {
   final Activity activity;
-  const IssueActivityComment({super.key, required this.activity});
+  final String? activityId;
+  const IssueActivityComment(
+      {super.key, this.activityId, required this.activity});
 
   @override
   State<IssueActivityComment> createState() => _IssueActivityCommentState();
@@ -32,35 +34,35 @@ class _IssueActivityCommentState extends State<IssueActivityComment> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Card(
-        color: const Color.fromARGB(204, 197, 214, 223),
-        surfaceTintColor: Colors.transparent,
-        child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                    currentCommentOwner?.displayName ??
-                        currentCommentOwner?.name ??
-                        "",
-                    style: const TextStyle(
-                        color: Color.fromARGB(242, 21, 86, 139))),
-                const SizedBox(
-                  height: 4,
-                ),
-                RichText(
-                    text: TextSpan(
-                        children: MentionFormatter()
-                            .mentionFormatter(widget.activity.text))),
-                // Text(activity.text,
-                //     style:
-                //         const TextStyle(color: Color.fromARGB(178, 21, 86, 139))),
-                Text(dateToWord(widget.activity.createdAt)),
-              ],
-            )),
+    return Focus(
+      autofocus: true,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Card(
+          color: const Color.fromARGB(204, 197, 214, 223),
+          surfaceTintColor: Colors.transparent,
+          child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                      currentCommentOwner?.displayName ??
+                          currentCommentOwner?.name ??
+                          "",
+                      style: const TextStyle(
+                          color: Color.fromARGB(242, 21, 86, 139))),
+                  const SizedBox(
+                    height: 4,
+                  ),
+                  RichText(
+                      text: TextSpan(
+                          children: MentionFormatter()
+                              .mentionFormatter(widget.activity.text))),
+                  Text(dateToWord(widget.activity.createdAt)),
+                ],
+              )),
+        ),
       ),
     );
   }

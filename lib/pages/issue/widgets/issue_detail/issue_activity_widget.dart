@@ -12,8 +12,9 @@ import 'package:provider/provider.dart';
 class IssueActivityWidget extends StatefulWidget {
   final Tenant tenant;
   final Issue issue;
+  final String? activityId;
   const IssueActivityWidget(
-      {super.key, required this.tenant, required this.issue});
+      {super.key, required this.tenant, required this.issue, this.activityId});
 
   @override
   State<IssueActivityWidget> createState() => _IssueActivityWidgetState();
@@ -70,7 +71,10 @@ class _IssueActivityWidgetState extends State<IssueActivityWidget> {
                   style: TextStyle(color: Color.fromARGB(255, 21, 86, 139)),
                   textScaler: TextScaler.linear(1.4),
                 ),
-                IssueDetailTimeline(activityList: activityList),
+                IssueDetailTimeline(
+                  activityList: activityList,
+                  activityId: widget.activityId,
+                ),
               ],
             ),
           );

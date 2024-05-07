@@ -38,8 +38,9 @@ class UserBloc {
       List<dynamic> data = response.data['data'];
       List<User> listOfUser = data.map((json) => User.fromJson(json)).toList();
       List<User> filteredListOfUser = listOfUser.where((element) {
-        return (element.name != auth.name) &&
-            (element.displayName != auth.name);
+        // return (element.name != auth.name) &&
+        //     (element.displayName != auth.name);
+        return true;
       }).toList();
       controller.add(UserState(userList: filteredListOfUser));
     } on DioException catch (err) {

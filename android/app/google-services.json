@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "123413467414",
-    "project_id": "obsidia-copycat",
-    "storage_bucket": "obsidia-copycat.appspot.com"
+    "project_number": "814788336194",
+    "project_id": "obsidia-efa00",
+    "storage_bucket": "obsidia-efa00.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123413467414:android:6fbfb0b866a76dd61e8037",
+        "mobilesdk_app_id": "1:814788336194:android:91737b5e3f748145ceebdb",
         "android_client_info": {
-          "package_name": "com.example.obsydia_copy_1"
+          "package_name": "com.mit.obsidia"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAjlEwdSDc3t8Q5g5zriUJF85s-ZR3n6Tc"
+          "current_key": "AIzaSyA5Q_1oA3Ty1XusEQdgEDFXg4op68fF72Y"
         }
       ],
       "services": {

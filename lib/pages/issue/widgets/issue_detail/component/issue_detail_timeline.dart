@@ -8,70 +8,77 @@ import 'package:timelines/timelines.dart';
 
 class IssueDetailTimeline extends StatelessWidget {
   final List<Activity> activityList;
-  const IssueDetailTimeline({super.key, required this.activityList});
+  final String? activityId;
+  const IssueDetailTimeline(
+      {super.key, required this.activityList, this.activityId});
 
   @override
   Widget build(BuildContext context) {
-    return Timeline.tileBuilder(
-        theme: TimelineThemeData(nodePosition: 0),
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        builder: TimelineTileBuilder(
-          itemCount: activityList.length,
-          //
-          startConnectorBuilder: (context, index) => (index == 0)
-              ? null
-              : Container(
-                  constraints: const BoxConstraints(minHeight: 20),
-                  child: const SolidLineConnector(
-                      color: Color.fromARGB(255, 21, 86, 139))),
-          //
-          indicatorBuilder: (context, index) {
-            return DotIndicator(
-              color: const Color.fromARGB(255, 21, 86, 139),
-              size: 30,
-              child: Icon(
-                activityList[index].type == ActivityType.comment
-                    ? Icons.person
-                    : Icons.edit,
-                color: Colors.white,
-                size: 18,
-              ),
-            );
-          },
-          //
-          endConnectorBuilder: (context, index) =>
-              (index == activityList.length - 1)
-                  ? null
-                  : Container(
-                      constraints: const BoxConstraints(minHeight: 20),
-                      child: const SolidLineConnector(
-                          color: Color.fromARGB(255, 21, 86, 139))),
-          //
-          contentsBuilder: (context, index) {
+    return FocusScope(
+      autofocus: true,
+      child: Timeline.tileBuilder(
+          theme: TimelineThemeData(nodePosition: 0),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          builder: TimelineTileBuilder(
+            itemCount: activityList.length,
             //
-            Activity currentActivity = activityList[index];
-            ActivityType currentActivityType = currentActivity.type;
+            startConnectorBuilder: (context, index) => (index == 0)
+                ? null
+                : Container(
+                    constraints: const BoxConstraints(minHeight: 20),
+                    child: const SolidLineConnector(
+                        color: Color.fromARGB(255, 21, 86, 139))),
+            //
+            indicatorBuilder: (context, index) {
+              return DotIndicator(
+                color: const Color.fromARGB(255, 21, 86, 139),
+                size: 30,
+                child: Icon(
+                  activityList[index].type == ActivityType.comment
+                      ? Icons.person
+                      : Icons.edit,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              );
+            },
+            //
+            endConnectorBuilder: (context, index) =>
+                (index == activityList.length - 1)
+                    ? null
+                    : Container(
+                        constraints: const BoxConstraints(minHeight: 20),
+                        child: const SolidLineConnector(
+                            color: Color.fromARGB(255, 21, 86, 139))),
+            //
+            contentsBuilder: (context, index) {
+              //
+              Activity currentActivity = activityList[index];
+              ActivityType currentActivityType = currentActivity.type;
 
-            return currentActivityType == ActivityType.comment
-                ? IssueActivityComment(activity: currentActivity)
-                : Padding(
-                    padding: const EdgeInsets.only(left: 20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        RichText(
-                            text: TextSpan(
-                                children: MentionFormatter()
-                                    .mentionFormatter(currentActivity.text))),
-                        Text(
-                          dateToWord(currentActivity.createdAt),
-                        )
-                      ],
-                    ),
-                  );
-          },
-        ));
+              return currentActivityType == ActivityType.comment
+                  ? IssueActivityComment(
+                      activity: currentActivity,
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.only(left: 20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          RichText(
+                              text: TextSpan(
+                                  children: MentionFormatter()
+                                      .mentionFormatter(currentActivity.text))),
+                          Text(
+                            dateToWord(currentActivity.createdAt),
+                          )
+                        ],
+                      ),
+                    );
+            },
+          )),
+    );
   }
 }
